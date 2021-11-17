@@ -13,5 +13,5 @@ CLI for AniList is a Rust command line interface for the [Manga/Anime](https://a
 
 ### Search
 - [x] Search for anime/manga
-- [ ] Search for characters
+- [x] Search for characters
 

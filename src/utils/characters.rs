@@ -1,13 +1,14 @@
-use crate::api::media::Page;
+use crate::api::characters::Page;
 
-pub fn print_media(page: Page) {
+pub fn print_characters(page: Page) {
   println!("{}", "RESULTS:");
-  for media in page.media {
+  for character in page.characters {
     println!("{}", "----------------");
-    println!("{}: {}", "ID", media.id);
-    println!("{}: {}", "English title", media.title.english);
-    println!("{}: {}", "Native title", media.title.native);
-    println!("{}: {}", "Romaji title", media.title.romaji);
+    println!("{}: {}", "ID", character.id);
+    println!("{}: {}", "Name", character.name.full);
+    println!("{}: {}", "Native name", character.name.native);
+    println!("{}: {}", "Gender", character.gender);
+    println!("{}: {}.{}", "Birthday", character.date_of_birth.day, character.date_of_birth.month);
   }
   println!("{}", "----------------\n");
 
