@@ -41,7 +41,7 @@ pub struct Variables {
   pub search: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Titles {
   #[serde(deserialize_with = "parse_title")]
   pub english: String,
@@ -109,4 +109,81 @@ pub async fn get_media(variables: Variables) -> Response {
 
   let result: Response = serde_json::from_str::<Response>(&res.unwrap_or_default()).unwrap();
   return result;
+}
+
+const GET_MEDIA_DETAILS: &str = "
+query ($id: Int) {
+  Media (id: $id) {
+    id
+    title {
+      english
+      romaji
+      native
+    }
+    type
+    format
+    status
+    description
+    episodes
+    chapters
+    volumes
+    averageScore
+    popularity
+    genres
+  }
+}
+";
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct MediaDetails {
+    pub id: i32,
+    pub title: Titles,
+    #[serde(rename = "type")]
+    pub media_type: Option<String>,
+    pub format: Option<String>,
+    pub status: Option<String>,
+    pub description: Option<String>,
+    pub episodes: Option<i32>,
+    pub chapters: Option<i32>,
+    pub volumes: Option<i32>,
+    #[serde(rename = "averageScore")]
+    pub average_score: Option<i32>,
+    pub popularity: Option<i32>,
+    pub genres: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct MediaDetailsData {
+    pub media: MediaDetails,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MediaDetailsResponse {
+    pub data: MediaDetailsData,
+}
+
+pub async fn get_media_details(id: i32, token: &str) -> Result<MediaDetails, Box<dyn std::error::Error>> {
+    let client = Client::new();
+
+    let json = json!({
+        "query": GET_MEDIA_DETAILS,
+        "variables": {
+            "id": id
+        }
+    });
+
+    let response = client
+        .post("https://graphql.anilist.co/")
+        .header("Authorization", format!("Bearer {}", token))
+        .header("Content-Type", "application/json")
+        .header("Accept", "application/json")
+        .json(&json)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    let result: MediaDetailsResponse = serde_json::from_str(&response)?;
+    Ok(result.data.media)
 }
